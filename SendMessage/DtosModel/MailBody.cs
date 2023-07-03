@@ -5,6 +5,11 @@
     */
     public class MailBody
     {
+        public enum SendResult
+        {
+            Ok,
+            Failed
+        }
         /** 
        <summary> Short content of the letter </summary> */
         public string Subject { get; set; } = string.Empty;
@@ -19,7 +24,7 @@
         public DateTime Date { get; set; } = DateTime.Now;
         /** 
          <summary> The result of processed message. Ether OK or Failed. </summary> */
-        public string? Result { get; set; }
+        public SendResult Result { get; set; }
         /** 
         <summary> If Error during transaction accured, error message will be saved,
          esle it will be Null</summary> */

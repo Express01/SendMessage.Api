@@ -18,7 +18,7 @@ namespace SendMessage.Services
         private IMapper _mapper;
         private MapperConfiguration mapperConfiguration;
         private string failedMessage;
-        private string status = "Failed";
+        private MailBody.SendResult status = MailBody.SendResult.Failed;
         public EmailService(IConfiguration config,IMailRepository mailRepository)
         {
             _config = config;
@@ -38,7 +38,7 @@ namespace SendMessage.Services
        * Returns new Collection of logged mails from database  </summary>  */
         public async Task<ICollection<MailBody>> GetAllMailAsync()
         {
-            ICollection<MailDAO> temp=await _mailRepository.GetMailsAsync();
+            ICollection<MailDAO> temp = await _mailRepository.GetMailsAsync();
             ICollection<MailBody> result = _mapper.Map<ICollection<MailDAO>, ICollection<MailBody>>(temp);
             return result;
         }
@@ -49,32 +49,17 @@ namespace SendMessage.Services
             MailBody body = new()
             {
                 Subject = mail.Subject,
-                Recipients= ArrayToString(mail.Recipients),
-                Body=mail.Body,
-                Date=DateTime.Now,
-                Result=status,
-                FailedMessage=failedMessage
+                Recipients = String.Join(',', mail.Recipients),
+                Body = mail.Body,
+                Date = DateTime.Now,
+                Result = status,
+                FailedMessage = failedMessage
             };
             MailDAO mailDAO=_mapper.Map<MailDAO>(body);
             await _mailRepository.PostMailAsync(mailDAO);
 
         }
-        private string ArrayToString(string[] arr)
-        {
-            StringBuilder result = new();
-            if (arr.Length == 1)
-            {
-                result.Append($"{arr[0]}");
-            }
-            else
-            {
-                foreach (var i in arr)
-                {
-                    result.Append($"{i},");
-                }
-            }
-            return result.ToString();
-        }
+
         /** <summary> Forming new email's according to config file  </summary>      
      */
         public async Task SendEmailAsync(MailView request)
@@ -97,13 +82,13 @@ namespace SendMessage.Services
                         email.To.Add(MailboxAddress.Parse(item));
                         await smtp.SendAsync(email);
                         Task.Delay(100).Wait();
-                        status = "Ok";
+                        status = MailBody.SendResult.Ok;
                     }
                 }
                 catch (Exception ex)
                 {
                     failedMessage = ex.Message;
-                    status = "Failed";
+                    status = MailBody.SendResult.Failed;
                 }
                 finally
                 {
