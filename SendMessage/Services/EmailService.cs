@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MailKit.Security;
+using Microsoft.OpenApi.Extensions;
 using MimeKit;
 using MimeKit.Text;
 using SendMessage.DtosModel;
@@ -82,7 +83,7 @@ namespace SendMessage.Services
                         email.To.Add(MailboxAddress.Parse(item));
                         await smtp.SendAsync(email);
                         Task.Delay(100).Wait();
-                        status = MailBody.SendResult.Ok;
+                        status = MailBody.SendResult.Ok ;
                     }
                 }
                 catch (Exception ex)
